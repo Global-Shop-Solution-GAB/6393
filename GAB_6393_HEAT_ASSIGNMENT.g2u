@@ -1,0 +1,138 @@
+Program.Sub.ScreenSU.Start
+Gui.SS_Form1..create
+Gui.SS_Form1..caption("Input Weight")
+Gui.SS_Form1..size(3375,1725)
+Gui.SS_Form1..position(6000,6000)
+Gui.SS_Form1..forecolor(0)
+Gui.SS_Form1..BackColor(-2147483633)
+Gui.SS_Form1..maxbutton(False)
+Gui.SS_Form1..minbutton(False)
+Gui.SS_Form1..mousepointer(0)
+Gui.SS_Form1..sizeable(False)
+Gui.SS_Form1..MinX(0)
+Gui.SS_Form1..MinY(0)
+Gui.SS_Form1..Event(UnLoad,SS_Form1_UnLoad)
+Gui.SS_Form1..AlwaysOnTop(True)
+Gui.SS_Form1.lbl_ddlHeat.create(label,"Input Weight:",True,1800,195,1,105,135,True,0,Arial,8,-2147483633,0)
+Gui.SS_Form1.lbl_ddlHeat.LabelStretch(True)
+Gui.SS_Form1.ddlHeat.create(dropdownlist)
+Gui.SS_Form1.ddlHeat.size(240,330)
+Gui.SS_Form1.ddlHeat.position(2085,345)
+Gui.SS_Form1.ddlHeat.BackColor(12632256)
+Gui.SS_Form1.ddlHeat.Visible(False)
+Gui.SS_Form1.cmdOk.create(button)
+Gui.SS_Form1.cmdOk.Caption("Ok")
+Gui.SS_Form1.cmdOk.size(1000,360)
+Gui.SS_Form1.cmdOk.position(100,750)
+Gui.SS_Form1.cmdOk.Event(Click,cmdOk_Click)
+Gui.SS_Form1.txtHeat.Create(TextBox,"",True,1755,300,0,90,345,True,0,"Arial",8,-2147483643,1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Variable.Global.sHeat.Declare(String)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+v.Local.sSql.Declare(String)
+v.Local.sTemp.Declare(String)
+v.Local.bExists.Declare(Boolean)
+v.Local.iTemp.Declare(Long,0)
+
+'if hook 51100 JB0640 fires after Update Pieces > Process is clicked on the GUI.
+'It fires before the AUTO WIP to fg Labels Print on report ID 1835 or 1871. They heat number that we pass should print on those lables
+'the finished good pieces that are WIPd should retain that heat # we send to the passed variable 9005
+
+
+
+f.Intrinsic.Control.If(v.Caller.Hook,=,51100)
+Function.Intrinsic.Control.AndIf(v.Passed.SYS050,=,"OLG002")
+	'Get heat # from user.
+	
+'	f.Intrinsic.String.Build("select distinct Heat from item_history where JOB = '{0}' and suffix = '{1}' and code_transaction = 'J55'",v.Passed.009000,v.Passed.009001,v.Local.sSql)
+'	f.ODBC.Connection!conx.OpenConnection(v.Ambient.PDSN,v.Ambient.PUser,v.Ambient.PPass)
+'	f.ODBC.Connection!conx.OpenRecordsetRO("rst",v.Local.sSql)
+'	f.Intrinsic.Control.If(v.ODBC.conx!rst.EOF,<>,True)
+'		
+'		'Load selections to 
+'		f.Intrinsic.Control.DoUntil(v.ODBC.conx!rst.EOF,=,true)
+'			f.Intrinsic.Control.If(v.ODBC.conx!rst.FieldValTrim!HEAT,<>,"")
+'				gui.SS_Form1.ddlHeat.AddItem(v.ODBC.conx!rst.FieldValTrim!HEAT)
+'				f.Intrinsic.Math.Add(1,v.Local.iTemp,v.Local.iTemp)
+'				v.Local.bExists.Set(True)
+'				v.Global.sHeat.Set(v.ODBC.conx!rst.FieldValTrim!HEAT)
+'			f.Intrinsic.Control.EndIf
+'			
+'			f.ODBC.conx!rst.MoveNext
+'		f.Intrinsic.Control.Loop	
+'	f.Intrinsic.Control.EndIf
+'	f.ODBC.conx!rst.Close
+'	f.ODBC.Connection!conx.Close
+'	
+'	'if only ONE heat, then just assign that one and end.
+'	f.Intrinsic.Control.If(v.Local.iTemp,=,1)
+'	Function.Intrinsic.Control.AndIf(v.Global.sHeat.Trim,<>,"")
+'		v.Passed.009005.Set(v.Global.sHeat)
+'		f.Intrinsic.Control.End
+
+'	f.Intrinsic.Control.EndIf
+'	
+'	f.Intrinsic.Control.If(v.Local.bExists,=,True)
+'	f.Intrinsic.Control.AndIf(v.Local.iTemp,>,1)
+'		gui.SS_Form1..Show
+'	f.Intrinsic.Control.EndIf
+
+'mod to input weight for Tintoria Piana
+gui.SS_Form1..Show
+
+f.Intrinsic.Control.EndIf
+
+
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4523_HEAT_ASSIGNMENT.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Main.End
+
+Program.Sub.cmdOk_Click.Start
+f.Intrinsic.Control.If(v.Screen.SS_Form1!txtHeat.Text,<>,"")
+	v.Passed.009005.Set(v.Screen.SS_Form1!txtHeat.Text)
+	f.Intrinsic.Control.End
+
+f.Intrinsic.Control.Else
+	gui.SS_Form1.lbl_ddlHeat.Caption("Weight Required")
+	gui.SS_Form1.lbl_ddlHeat.FontStyle(True,false,false,false,false)
+
+f.Intrinsic.Control.EndIf
+Program.Sub.cmdOk_Click.End
+
+Program.Sub.SS_Form1_UnLoad.Start
+Program.Sub.SS_Form1_UnLoad.End
+
+Program.Sub.Comments.Start
+${$0$}$GCG_4470_HEAT_ASSIGNEMNT$}$SUPERVSR$}$3/29/2017 9:32:22 AM$}$False
+${$3$}$0$}$$}$0$}$-1$}$$}$12:00:00 AM$}$prompts the user to select a heat# from multiple heats that were issued to the job. passes the heat to a variable core uses to process the pieces being put into inventory
+
+Program.Sub.ScreenSS.Start
+SS_Form1{{CAPTION::Select Heat
+SS_Form1.CTRL{{NAME::ddlHeat\\TYPE::4\\CAPTION::Select Heat:\\GROUP::-1\\BROWSER::0\\SIZE::1
+SS_Form1.CTRL{{NAME::cmdOk\\TYPE::5\\CAPTION::Ok\\GROUP::-1\\BROWSER::0\\SIZE::1
+Program.Sub.Comments.End
+
+Program.Sub.ScreenSS.Start
+SS_Form1{{CAPTION::Select Heat
+SS_Form1.CTRL{{NAME::ddlHeat\\TYPE::4\\CAPTION::Select Heat:\\GROUP::-1\\BROWSER::0\\SIZE::1
+SS_Form1.CTRL{{NAME::cmdOk\\TYPE::5\\CAPTION::Ok\\GROUP::-1\\BROWSER::0\\SIZE::1
+
+Program.Sub.ScreenSS.End
